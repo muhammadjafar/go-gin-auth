@@ -57,7 +57,9 @@ func (c *userController) Profile(context *gin.Context) {
 	authHeader := context.GetHeader("Authorization")
 	token, err := c.jwtService.ValidateToken(authHeader)
 	if err != nil {
-		panic(err.Error())
+		response := helper.BuildErrorResponse("Please check again your credential", err.Error(), helper.EmptyObj{})
+		context.JSON(http.StatusUnauthorized, response)
+		return
 	}
 	claims := token.Claims.(jwt.MapClaims)
 	id := fmt.Sprintf("%v", claims["user_id"])
