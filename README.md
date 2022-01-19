@@ -2,7 +2,7 @@
 
 ## Run Project
 
-To run this project, you need to install [Go](https://golang.org/) and set your Go workspace first. then you can use below Go command for development.
+To run this project, you need to install [Go](https://golang.org/) and set your Go workspace first. then you can copy .env.sample to .env file to set configuration, then you can use below Go command for development :
 
 ```sh
 $ go run main.go
