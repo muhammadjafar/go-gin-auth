@@ -33,6 +33,7 @@ func main() {
 		})
 	})
 
+	r.MaxMultipartMemory = 8 << 20 // 8 MiB
 	authRoutes := r.Group("api/auth")
 	{
 		authRoutes.POST("/login", authController.Login)
@@ -45,14 +46,12 @@ func main() {
 		userRoutes.PUT("/profile", userController.Update)
 	}
 
-	bookRoutes := r.Group("api/books", middleware.AuthorizeJWT(jwtService))
-	{
-		bookRoutes.GET("/", bookController.All)
-		bookRoutes.POST("/", bookController.Insert)
-		bookRoutes.GET("/:id", bookController.FindByID)
-		bookRoutes.PUT("/:id", bookController.Update)
-		bookRoutes.DELETE("/:id", bookController.Delete)
-	}
+	bookRoutes := r.Use(middleware.AuthorizeJWT(jwtService))
+	bookRoutes.GET("/api/books", bookController.All)
+	bookRoutes.POST("/api/books", bookController.Insert)
+	bookRoutes.GET("/api/books/:id", bookController.FindByID)
+	bookRoutes.PUT("/api/books/:id", bookController.Update)
+	bookRoutes.DELETE("/api/books/:id", bookController.Delete)
 
 	r.Run()
 }

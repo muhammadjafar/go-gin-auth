@@ -8,6 +8,7 @@ import (
 	"golang-api/service"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -66,8 +67,21 @@ func (c *bookController) Insert(context *gin.Context) {
 		authHeader := context.GetHeader("Authorization")
 		userID := c.getUserIDByToken(authHeader)
 		convertedUserID, err := strconv.ParseUint(userID, 10, 64)
-		if err != nil {
+		if err == nil {
 			bookCreateDTO.UserID = convertedUserID
+		}
+		file, err := context.FormFile("file")
+		if err != nil {
+			res := helper.BuildErrorResponse("Failed to process request", err.Error(), helper.EmptyObj{})
+			context.JSON(http.StatusBadRequest, res)
+			return
+		}
+
+		var time string = fmt.Sprint(time.Now().Unix())
+		// Upload the file to specific dst.
+		errUpload := context.SaveUploadedFile(file, "assets/"+time+file.Filename)
+		if errUpload == nil {
+			bookCreateDTO.Attachment = "assets/" + time + file.Filename
 		}
 		result := c.bookService.Insert(bookCreateDTO)
 		response := helper.BuildResponse(true, "OK!", result)
