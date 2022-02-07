@@ -5,6 +5,7 @@ import (
 	"golang-api/dto"
 	"golang-api/entity"
 	"golang-api/helper"
+	"golang-api/mail"
 	"golang-api/service"
 	"net/http"
 	"strconv"
@@ -84,6 +85,18 @@ func (c *bookController) Insert(context *gin.Context) {
 			bookCreateDTO.Attachment = "assets/" + time + file.Filename
 		}
 		result := c.bookService.Insert(bookCreateDTO)
+
+		token, errToken := c.jwtService.ValidateToken(authHeader)
+		if errToken != nil {
+			panic(errToken.Error())
+		}
+		claims := token.Claims.(jwt.MapClaims)
+		data, _ := claims["data"]
+		md, _ := data.(map[string]interface{})
+		var mailBook mail.MailBookData
+		mailBook.Receiver = fmt.Sprintf("%v", md["email"])
+		mail.MailBook(mailBook, bookCreateDTO)
+
 		response := helper.BuildResponse(true, "OK!", result)
 		context.JSON(http.StatusOK, response)
 	}

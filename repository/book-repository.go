@@ -25,8 +25,13 @@ func NewBookRepository(dbConn *gorm.DB) BookRepository {
 }
 
 func (db *bookConnection) InsertBook(b entity.Book) entity.Book {
-	db.connection.Save(&b)
-	db.connection.Preload("User").Find(&b)
+	db.connection.Transaction(func(tx *gorm.DB) error {
+		tx.Save(&b)
+		tx.Preload("User").Find(&b)
+		return nil
+	})
+	// db.connection.Save(&b)
+	// db.connection.Preload("User").Find(&b)
 	return b
 }
 
